@@ -14,18 +14,50 @@ end
 
 def splitArguments(args)
         argc = 0
-        argv = ["",]
-        ind = 0
+        argv = []
+
+        #count open rect brackets to use whole string
+        openBrackets = 0
         args.each_char{|c|
-            if c == "[" || c==","
-                argv[argc] = ""
-                argc = argc + 1
-            elsif c == "]"
-                return argv
+            if c == "["
+                openBrackets += 1
+            end
+            if c == "]"
+                openBrackets -= 1
+                if openBrackets == 0
+                    return argv
+                end
+            end
+
+            #collect only arguments of first order
+            if (c == "[" || c == ",") && openBrackets == 1
+                argv.insert(-1,"")
+                argc += 1
             else
-                argv[argc-1] = argv[argc-1]+c
+                argv[argc-1] += c
             end
         }
+        if openBrackets != 0
+            puts("Syntax error!")
+            return []
+        end
+end
+
+def processArguments(args)
+    out = []
+    args.each{|a|
+        if a.include?("$")
+            command = (a.scan(/\$[a-zA-Z]*/)[0]).delete("$")
+            arguments = splitArguments((a.scan(/[\[].*[\]]/))[0])
+            arguments = processArguments(arguments)
+            res = execCommand(command,arguments)
+            out.concat(res)
+        else
+            out.insert(-1,a)
+        end
+    }
+    puts(out)
+    return out
 end
 
 def parseFile(configFileName)
@@ -36,8 +68,11 @@ def parseFile(configFileName)
             if rF_l.include?("$")
                 #extract the command - regexes return arrays
                 command = (rF_l.scan(/\$[a-zA-Z]*/)[0]).delete("$")
+                puts(command)
                 arguments = splitArguments((rF_l.scan(/[\[].*[\]]/))[0])
+                arguments = processArguments(arguments)
                 outPut = outPut + execCommand(command,arguments)
+
             else
                 outPut = outPut + rF_l
             end
