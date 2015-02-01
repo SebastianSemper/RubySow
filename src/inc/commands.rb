@@ -1,3 +1,4 @@
+# get name and value
 def setVariable(argv)
     varName = argv[0]
     varValue = argv[1]
@@ -12,6 +13,16 @@ def setVariable(argv)
     return ""
 end
 
+def decVariable(argv)
+    varName = argv[0]
+    varValue = argv[1]
+    VarNames.insert(-1,varName)
+    VarValues.insert(-1,varValue)
+    puts("Setting #{varName} to #{varValue}.")
+    return ""
+end
+
+#get name an initial values
 def decList(argv)
     listName = argv[0]
     listContent = argv[1..(argv.size()-1)]
@@ -20,6 +31,7 @@ def decList(argv)
     return ""
 end
 
+#return comma sep. list as string
 def getList(argv)
     listName = argv[0]
     index = ListNames.find_index(listName)
@@ -29,22 +41,82 @@ def getList(argv)
     else
         out = ""
         ListContents[index].each{|e|
-            out = out + "," + e
+            if (e == ListContents[index].first())
+                out = e
+            else
+                out += "," + e
+            end
         }
-        return ListContents[index]
+        return out
     end
 end
 
+#return a lists size
+def getListSize(argv)
+    listName = argv[0]
+    index = ListNames.find_index(listName)
+    if index == nil
+        puts("List #{listName} was not declared.")
+        return ""
+    else
+        return ListContents[index].size().to_s()
+    end
+end
+
+#apply a function to every element of a list
+#returns a list of return values
+def applyToList(argv)
+        funName = argv[0]
+        funArgs = argv[1..-1]
+        out = ""
+        funArgs.each{|a|
+            if (a == funArgs.first())
+                out = execCommand(funName,[a])
+            else
+                out += "," + execCommand(funName,[a])
+            end
+        }
+        return out
+end
+
+#apply a function with several parameters to lists
+#lists provide values for a paramater each
+#count of lists must be provided
+def applyToLists(argv)
+        funName = argv[0]
+        funArgs = argv[2..-1]
+        listCount = argv[1].to_i()
+        listSize = funArgs.size()/listCount
+        out = ""
+        for i in 0..(listSize-1)
+            args = []
+            for j in 0..(listCount-1)
+                args.insert(-1,funArgs[j*listSize+i])
+            end
+            args = args[0..(listSize-2)]
+            if i == 0
+                out = execCommand(funName,args)
+            else
+                out += "," + execCommand(funName,args)
+            end
+        end
+        return out
+end
+
+#parses a file and saves as an other file
 def sowToFile(argv)
     inName = argv[0]
     outName = argv[1]
+    puts("Sowing #{outName}.")
+    outDir_p =  p_getVal("outDir")
     outFile = File.open(outName,'w')
     outFile.write(parseFile(inName))
     outFile.close()
-    return " "
+    return outName
 end
 
-def dropImages(argv)
+#drops some text that can be wrapped around a lists elements
+def dropList(argv)
     container = argv[0]
     imgList = argv[1..-1]
 
@@ -58,12 +130,35 @@ def dropImages(argv)
     return out
 end
 
+#drops some text that has places where to add values
+#each list provides values for one place
+def dropLists(argv)
+    container = argv[0]
+    lists = argv[1..-1]
+    listCount = container.count("%")
+    listSize = lists.size()/listCount.to_i()
+    out = ""
+    for i in 0..(listSize-1)
+        part = container
+        for j in 0..(listCount-1)
+            ins = part.partition("%")[0]
+            part = part.partition("%")[2]
+            out += ins + lists[j*listSize + i]
+        end
+        out += part + "\n"
+    end
+    return out
+end
+
+#Sows in another files content, that gets parsed as well an the output is
+#writen directly to the target
 def patchIn(argv)
     name = argv[0]
     puts("Including #{name}.")
     return(parseFile(name))
 end
 
+#loads some css files provided in a list
 def fetchCSS(argv)
         out = ""
         argv.each{|p|
@@ -72,6 +167,7 @@ def fetchCSS(argv)
         return(out)
 end
 
+#loads some JS scripts provided in a list
 def fetchJS(argv)
         out = ""
         argv.each{|p|
@@ -82,32 +178,47 @@ end
 
 CmdNames = [
     'setVariable',
+    'decVariable',
     'decList',
     'getList',
+    'getListSize',
+    'applyToList',
+    'applyToLists',
 
     'sowToFile',
-    'dropImages',
+    'dropList',
+    'dropLists',
     'patchIn',
     'fetchCSS',
     'fetchJS'
 ]
 CmdMethods = [
     method(:setVariable),
+    method(:decVariable),
     method(:decList),
     method(:getList),
+    method(:getListSize),
+    method(:applyToList),
+    method(:applyToLists),
 
     method(:sowToFile),
-    method(:dropImages),
+    method(:dropList),
+    method(:dropLists),
     method(:patchIn),
     method(:fetchCSS),
     method(:fetchJS)
 ]
 CmdArgc = [
     2,
+    2,
     -1,
     1,
+    1,
+    2,
+    -1,
 
     2,
+    -1,
     -1,
     1,
     -1,

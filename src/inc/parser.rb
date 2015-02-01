@@ -1,3 +1,4 @@
+#executes command[string] with arguments[Array<string>]
 def execCommand(command, arguments)
     index = CmdNames.find_index(command)
     if index == nil
@@ -24,6 +25,7 @@ def splitArguments(args)
             end
             if c == "]"
                 openBrackets -= 1
+                #if last bracket was closed, return without adding it
                 if openBrackets == 0
                     return argv
                 end
@@ -43,32 +45,51 @@ def splitArguments(args)
         end
 end
 
+def splitList(list)
+    out = [""]
+    list.each_char{|c|
+        if c == ","
+            out.insert(-1,"")
+        else
+            out[-1] += c
+        end
+    }
+    return out
+end
+
 def processArguments(args)
     out = []
     args.each{|a|
+        #check if argument itself is a command
         if a.include?("$")
+            #extract command
             command = (a.scan(/\$[a-zA-Z]*/)[0]).delete("$")
+            #split them into a list
             arguments = splitArguments((a.scan(/[\[].*[\]]/))[0])
+            #recursively do that
             arguments = processArguments(arguments)
+            #execute the command at hand
             res = execCommand(command,arguments)
+            #put everything in a list
+            res = splitList(res)
+            #append it to the result
             out.concat(res)
         else
+            #just leave the argument as is
             out.insert(-1,a)
         end
     }
-    puts(out)
     return out
 end
 
 def parseFile(configFileName)
-    outPut = " "
+    outPut = ""
     File.open(configFileName,'r') do |rF_h|
         while rF_l = rF_h.gets()
             #check if line contains a RubySow command
             if rF_l.include?("$")
                 #extract the command - regexes return arrays
                 command = (rF_l.scan(/\$[a-zA-Z]*/)[0]).delete("$")
-                puts(command)
                 arguments = splitArguments((rF_l.scan(/[\[].*[\]]/))[0])
                 arguments = processArguments(arguments)
                 outPut = outPut + execCommand(command,arguments)
