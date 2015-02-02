@@ -1,4 +1,4 @@
-# get name and value
+# provide name and value
 def setVariable(argv)
     varName = argv[0]
     varValue = argv[1]
@@ -12,6 +12,19 @@ def setVariable(argv)
     end
     return ""
 end
+
+# provide name
+def getVariable(argv)
+    varName = argv[0]
+    index= VarNames.find_index(varName)
+    if index == nil
+        puts("Returning #{varName} is not possible. Does not exist.")
+        return ""
+    else
+        return VarValues[index]
+    end
+end
+
 
 def decVariable(argv)
     varName = argv[0]
@@ -31,6 +44,15 @@ def decList(argv)
     return ""
 end
 
+def genList(argv)
+    listName = argv[0]
+    #open dir, pull out rexeg matches, join them
+    listContent = Dir.entries(argv[1]).select{|c| c[/#{argv[2]}/]}
+    ListNames.insert(-1,listName)
+    ListContents.insert(-1,listContent)
+    return ""
+end
+
 #return comma sep. list as string
 def getList(argv)
     listName = argv[0]
@@ -39,15 +61,7 @@ def getList(argv)
         puts("List #{listName} was not declared.")
         return ""
     else
-        out = ""
-        ListContents[index].each{|e|
-            if (e == ListContents[index].first())
-                out = e
-            else
-                out += "," + e
-            end
-        }
-        return out
+        return ListContents[index].join(",")
     end
 end
 
@@ -101,6 +115,14 @@ def applyToLists(argv)
             end
         end
         return out
+end
+
+def readTree(argv)
+    path = argv[0]
+    match = argv[1]
+    out = Dir.glob(path+"**/*.rhtml")
+    puts(out)
+    return ""
 end
 
 #parses a file and saves as an other file
@@ -176,15 +198,20 @@ def fetchJS(argv)
         return(out)
 end
 
+
+
 CmdNames = [
     'setVariable',
+    'getVariable',
     'decVariable',
     'decList',
+    'genList',
     'getList',
     'getListSize',
     'applyToList',
     'applyToLists',
 
+    'readTree',
     'sowToFile',
     'dropList',
     'dropLists',
@@ -194,13 +221,16 @@ CmdNames = [
 ]
 CmdMethods = [
     method(:setVariable),
+    method(:getVariable),
     method(:decVariable),
     method(:decList),
+    method(:genList),
     method(:getList),
     method(:getListSize),
     method(:applyToList),
     method(:applyToLists),
 
+    method(:readTree),
     method(:sowToFile),
     method(:dropList),
     method(:dropLists),
@@ -210,13 +240,16 @@ CmdMethods = [
 ]
 CmdArgc = [
     2,
+    1,
     2,
+    -1,
     -1,
     1,
     1,
     2,
     -1,
 
+    2,
     2,
     -1,
     -1,
