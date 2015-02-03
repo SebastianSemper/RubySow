@@ -118,10 +118,23 @@ def applyToLists(argv)
 end
 
 def readTree(argv)
-    path = argv[0]
-    match = argv[1]
-    out = Dir.glob(path+"**/*.rhtml")
-    puts(out)
+    genFileTree(argv[0],argv[1],FileTree)
+    return ""
+end
+
+def sowAll(argv)
+    inTree = searchFileTree(".rhtml",FileTree)
+    Dir.chdir("..")
+
+    outTree = inTree.dup
+    outTree[:node] = argv[0]
+    outTree = renameFileTree(".rhtml",".html",outTree)
+    inTree = absoluteFileTree(inTree)
+    Dir.chdir("..")
+    outTree = absoluteFileTree(outTree)
+    Dir.chdir("..")
+
+    applyToTree(method(:sowToFile),[inTree,outTree])
     return ""
 end
 
@@ -130,6 +143,7 @@ def sowToFile(argv)
     inName = argv[0]
     outName = argv[1]
     puts("Sowing #{outName}.")
+    Dir.chdir(File.dirname(File.absolute_path(inName)))
     outDir_p =  p_getVal("outDir")
     outFile = File.open(outName,'w')
     outFile.write(parseFile(inName))
@@ -212,6 +226,7 @@ CmdNames = [
     'applyToLists',
 
     'readTree',
+    'sowAll',
     'sowToFile',
     'dropList',
     'dropLists',
@@ -231,6 +246,7 @@ CmdMethods = [
     method(:applyToLists),
 
     method(:readTree),
+    method(:sowAll),
     method(:sowToFile),
     method(:dropList),
     method(:dropLists),
@@ -250,6 +266,7 @@ CmdArgc = [
     -1,
 
     2,
+    1,
     2,
     -1,
     -1,

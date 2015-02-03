@@ -3,4 +3,4 @@
         <title>RubySow - The Documentation</title>
     </head>
     <body>
-        $patchIn[menu.rhtml]
+        $patchIn[menu.part]
