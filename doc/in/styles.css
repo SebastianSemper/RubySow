@@ -1,0 +1,64 @@
+body{
+    margin:                            0px;
+    padding:                          0px;
+    border-bottom:            1px solid blue;
+}
+
+a {
+    color: black
+}
+a:visited {
+    color: black
+}
+a:hover {
+    color: red
+}
+.headerBox {
+    margin:                           0px;
+    padding:                         0px;
+    width:                              100%;
+    border-bottom:            1px solid blue;
+}
+.headerBox h1{
+    text-align:                         center;
+}
+.headerBox h2{
+    text-align:                         center;
+}
+
+.navBox {
+    width:                                100%;
+    text-align:                         center;
+    border-bottom:              1px solid blue;
+    padding:                            5px 10px 8px 10px;
+    background-color:           rgb(240,240,240);
+}
+
+.navBox a{
+    margin:                             0px 5px 0px 5px
+}
+
+.contentBox {
+    width:                                  700px;
+    margin:                                0px auto 0px auto;
+    padding:                             20px 40px 20px 40px;
+    border-left:                        1px solid grey;
+    border-right:                        1px solid grey;
+}
+
+.contentBox p{
+    margin:                                0px;
+    padding:                               0px;
+    font-family:                        "Times New Roman",serif;
+}
+
+.footerBox {
+    border-top:                  1px solid blue;
+}
+
+.footerBox p{
+    margin:                                0px;
+    padding:                               0px;
+    text-align:                             center;
+    font-size:                              0.75em;
+}

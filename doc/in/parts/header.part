@@ -1,0 +1,11 @@
+<html>
+    <head>
+        <title>RubySow - The Documentation</title>
+    </head>
+    $fetchCSS[styles.css]
+    <body>
+        <div class="headerBox">
+            <h1>RubySow</h1>
+            <h2>The simple HTML generator harnessing the power of Ruby</h2>
+        </div>
+        $patchIn[parts/menu.part]
