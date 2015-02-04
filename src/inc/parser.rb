@@ -1,3 +1,4 @@
+ArgSep = "%#,#%"
 #executes command[string] with arguments[Array<string>]
 def execCommand(command, arguments)
     index = CmdNames.find_index(command)
@@ -14,90 +15,106 @@ def execCommand(command, arguments)
 end
 
 def splitArguments(args)
-        argc = 0
-        argv = []
-
-        #count open rect brackets to use whole string
-        openBrackets = 0
-        args.each_char{|c|
-            if c == "["
-                openBrackets += 1
-            end
-            if c == "]"
-                openBrackets -= 1
-                #if last bracket was closed, return without adding it
-                if openBrackets == 0
-                    return argv
-                end
-            end
-
-            #collect only arguments of first order
-            if (c == "[" || c == ",") && openBrackets == 1
-                argv.insert(-1,"")
-                argc += 1
-            else
-                argv[argc-1] += c
-            end
-        }
-        if openBrackets != 0
-            puts("Syntax error!")
-            return []
-        end
-end
-
-def splitList(list)
-    out = [""]
-    list.each_char{|c|
-        if c == ","
-            out.insert(-1,"")
-        else
-            out[-1] += c
-        end
-    }
-    return out
+    return args.split(ArgSep)
 end
 
 def processArguments(args)
-    out = []
-    args.each{|a|
-        #check if argument itself is a command
-        if a.include?("$")
-            #extract command
-            command = (a.scan(/\$[a-zA-Z]*/)[0]).delete("$")
-            #split them into a list
-            arguments = splitArguments((a.scan(/[\[].*[\]]/))[0])
-            #recursively do that
-            arguments = processArguments(arguments)
-            #execute the command at hand
-            res = execCommand(command,arguments)
-            #put everything in a list
-            res = splitList(res)
-            #append it to the result
-            out.concat(res)
-        else
-            #just leave the argument as is
-            out.insert(-1,a)
+    part = args.partition(/\$[a-zA-Z]*\[/)
+    if part[1].size() > 0
+        out = part[0]
+        args = part[1] + part[2]
+
+        #start with the match, starts like $command[
+        command = part[1]
+        i = command.size()
+
+        #add symbols as long as brackets dont match
+        while command.count("[") != command.count("]")
+            command += args[i]
+            i += 1
         end
-    }
+        #we are done and can process the command at hand
+        #extract the function
+        fun = command.scan(/\$[a-zA-Z]*\[/)[0].chop()[1..-1]
+        #extract the arguments
+        arg = command.scan(/\[.*\]/)[0].chop()[1..-1]
+        #check if argument contains more commands
+        if (args[i..-1].size() > 0)
+            out += execCommand(fun,splitArguments(processArguments(arg))) + ArgSep + processArguments(args[(i+ArgSep.size())..-1])
+        else
+            out += execCommand(fun,splitArguments(processArguments(arg)))
+        end
+        return out
+    else
+        #if no command is in, we just return the arguments as they are
+        return args
+    end
+end
+
+#takes a line that contains at leat one command
+def parseLine(line)
+    #get rid of the beginning but add it to output
+    part = line.partition(/\$[a-zA-Z]*\[/)
+    out = part[0]
+
+    #rest of the line
+    line = part[1] + part[2]
+
+    #start with the match, starts like $command[
+    command = part[1]
+    i = command.size()
+
+    #add symbols as long as brackets dont match
+    while command.count("[") != command.count("]")
+        command += line[i]
+        i += 1
+    end
+
+    #we are done and can process the command at hand
+    #extract the function
+    fun = command.scan(/\$[a-zA-Z]*\[/)[0].chop()[1..-1]
+    #extract the arguments
+    args = command.scan(/\[.*\]/)[0].chop()[1..-1]
+    args = args.split(',').join(ArgSep)
+    #puts("Processing the function #{fun} with argument(s) #{args}.")
+    args = processArguments(args)
+    out += execCommand(fun,splitArguments(args))
+
+    #if there are still commands continue with the rest
+    if line[i..-1].partition(/\$[a-zA-Z]*\[/)[1].size() > 0
+        out += parseLine(line[i..-1])
+    else
+        #if not just push out the rest of the text
+        out += line[i..-1]
+    end
     return out
 end
 
-def parseFile(configFileName)
-    outPut = ""
-    File.open(configFileName,'r') do |rF_h|
-        while rF_l = rF_h.gets()
-            #check if line contains a RubySow command
-            if rF_l.include?("$")
-                #extract the command - regexes return arrays
-                command = (rF_l.scan(/\$[a-zA-Z]*/)[0]).delete("$")
-                arguments = splitArguments((rF_l.scan(/[\[].*[\]]/))[0])
-                arguments = processArguments(arguments)
-                outPut = outPut + execCommand(command,arguments)
+def parseFile(fileName)
+    out = ""
 
+    #check if file exists
+    if (File.exists?(fileName))
+        #open it
+        fileHandle = File.open(fileName,'r')
+
+        #go through each line
+        fileHandle.each_line{|line|
+
+            #allow out commented lines
+            next if line.strip()[0] == "#"
+
+            #check if any command is in the line
+            if line.scan(/\$[a-zA-Z]*\[.*\]/).size() > 0
+                out += parseLine(line)
             else
-                outPut = outPut + rF_l
+                #no command found we just write it out
+                out += line
             end
-        end
+        }
+        return out
+    else
+        puts("Could not open #{fileName} for parsing! Aborting!")
+        return ""
     end
-    return outPut
 end

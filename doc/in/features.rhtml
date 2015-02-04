@@ -1,0 +1,11 @@
+$patchIn[parts/header.part]
+$decVariable[featureContainer,<div class="featureBox">%</div>]
+$genList[featureList,parts/features,.*.part]
+<div class="contentBox">
+    <p>
+        Every feature was included with a certain $intention but still with as mush flexibility as possible. Keep on reading to find out more what to expect from RubySow. []
+    </p>
+    $dropList[$getVariable[featureContainer],$applyToList[patchIn,$getList[featureList]]]
+</div>
+
+$patchIn[parts/footer.part]

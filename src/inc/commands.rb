@@ -47,7 +47,11 @@ end
 def genList(argv)
     listName = argv[0]
     #open dir, pull out rexeg matches, join them
-    listContent = Dir.entries(argv[1]).select{|c| c[/#{argv[2]}/]}
+    listContent_ = Dir.entries(argv[1]).select{|c| c[/#{argv[2]}/]}
+    listContent = []
+    listContent_.each{|c|
+        listContent.insert(-1,argv[1] + "/" + c)
+    }
     ListNames.insert(-1,listName)
     ListContents.insert(-1,listContent)
     return ""
@@ -61,7 +65,7 @@ def getList(argv)
         puts("List #{listName} was not declared.")
         return ""
     else
-        return ListContents[index].join(",")
+        return ListContents[index].join(ArgSep)
     end
 end
 
@@ -87,7 +91,7 @@ def applyToList(argv)
             if (a == funArgs.first())
                 out = execCommand(funName,[a])
             else
-                out += "," + execCommand(funName,[a])
+                out += ArgSep + execCommand(funName,[a])
             end
         }
         return out
@@ -111,7 +115,7 @@ def applyToLists(argv)
             if i == 0
                 out = execCommand(funName,args)
             else
-                out += "," + execCommand(funName,args)
+                out += ArgSep + execCommand(funName,args)
             end
         end
         return out
@@ -135,6 +139,16 @@ def sowAll(argv)
     Dir.chdir("..")
 
     applyToTree(method(:sowToFile),[inTree,outTree])
+
+    copyInTree = searchFileTree(".(css|jpe?g|png|js)",FileTree)
+    Dir.chdir("..")
+    copyOutTree = copyInTree.dup
+    copyOutTree[:node] = argv[0]
+    copyInTree = absoluteFileTree(copyInTree)
+    Dir.chdir("..")
+    copyOutTree = absoluteFileTree(copyOutTree)
+    Dir.chdir(inTree[:node])
+    applyToTree(method(:copyFile),[copyInTree,copyOutTree])
     return ""
 end
 
@@ -151,16 +165,24 @@ def sowToFile(argv)
     return outName
 end
 
+#parses a file and saves as an other file
+def copyFile(argv)
+    inName = argv[0]
+    outName = argv[1]
+    puts("Copying #{inName} to #{outName}.")
+    FileUtils.cp(inName,outName)
+    return outName
+end
+
 #drops some text that can be wrapped around a lists elements
 def dropList(argv)
     container = argv[0]
-    imgList = argv[1..-1]
-
+    list = argv[1..-1]
     #split the container
     contStart = container.scan(/.*\%/)[0].gsub(/\%/,'')
     contEnd = container.scan(/\%.*/)[0].gsub(/\%/,'')
     out = ""
-    imgList.each{|i|
+    list.each{|i|
         out = out + contStart + i + contEnd + "\n"
     }
     return out
@@ -190,8 +212,9 @@ end
 #writen directly to the target
 def patchIn(argv)
     name = argv[0]
+    puts(Dir.getwd())
     puts("Including #{name}.")
-    return(parseFile(name))
+    return parseFile(name)
 end
 
 #loads some css files provided in a list
@@ -228,6 +251,7 @@ CmdNames = [
     'readTree',
     'sowAll',
     'sowToFile',
+    'copyFile',
     'dropList',
     'dropLists',
     'patchIn',
@@ -248,6 +272,7 @@ CmdMethods = [
     method(:readTree),
     method(:sowAll),
     method(:sowToFile),
+    method(:copyFile),
     method(:dropList),
     method(:dropLists),
     method(:patchIn),
@@ -262,11 +287,12 @@ CmdArgc = [
     -1,
     1,
     1,
-    2,
+    -1,
     -1,
 
     2,
     1,
+    2,
     2,
     -1,
     -1,

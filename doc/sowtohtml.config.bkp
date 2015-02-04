@@ -1,7 +1,7 @@
-This is a command $decVariable[inDir,in/] now we continue with $decVariable[outDir,out/] this is cool!
+$decVariable[inDir,in/]
+$decVariable[outDir,out/]
 $decList[pagesLinks,index.html,about.html,features.html,manual.html,examples.html]
 $decList[pagesTexts,Home,About,Features,Manual,Examples]
 $readTree[$getVariable[inDir],*.*]
 $sowAll[$getVariable[outDir]]
-$dropList[$getVariable[featureContainer],$applyToList[patchIn,$getList[featureList]]]
-blubb $ [] $bla
+applyToLists[sowToFile,2,getList[pagesRaw],getList[pagesLinks]]

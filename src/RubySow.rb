@@ -1,3 +1,4 @@
+require 'fileutils'
 require "#{File.dirname(__FILE__)}/inc/parser"
 require "#{File.dirname(__FILE__)}/inc/tree"
 require "#{File.dirname(__FILE__)}/inc/variables"
