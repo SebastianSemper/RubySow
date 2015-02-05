@@ -1,5 +1,5 @@
-<h3>patchIn</h3>
-<h4>Insert and parse another file</h4>
+<h3><li>Patching</li></h3>
+<h4>Parse and insert another file</h4>
 <p>
-The maybe most important thing it to split, things up, into manageable parts. There is nothing worse than browsing through a massive amount of code that most of the time repeats itself a lot since well. That's how websites are. One page often contains several instances of the same thing like images, tables or whole pieces of text.
+The maybe most important thing it to split, things up, into manageable parts. There is nothing worse than browsing through a massive amount of code that most of the time repeats itself a lot since well - that's how websites are. One page often contains several instances of the same thing like images, tables or whole pieces of text.
 </p>

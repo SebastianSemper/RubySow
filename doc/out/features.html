@@ -1,10 +1,20 @@
-<html>
+<html lang="en-gb">
     <head>
         <title>RubySow - The Documentation</title>
-    </head>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <script src="Hyphenator.js" type="text/javascript"></script>
 
-    <body>
+        <script type="text/javascript">
+        Hyphenator.config({
+                useCSS3hyphenation: true
+        });
+        Hyphenator.run();
+    </script>
+        <link rel="stylesheet" type="text/css" href="styles.css">
+
+    </head>
+
+    <body class="hyphenate text">
         <div class="headerBox">
             <h1>RubySow</h1>
             <h2>The simple HTML generator harnessing the power of Ruby</h2>
@@ -21,27 +31,40 @@
 
 
 
+
+
+
+
 <div class="contentBox">
     <p>
-        Every feature was included with a certain $intention but still with as mush flexibility as possible. Keep on reading to find out more what to expect from RubySow. []
+        Every feature was included with a certain intention but still with as mush flexibility as possible. Keep on reading to find out more what to expect from RubySow.
     </p>
-    <div class="featureBox"><h3>patchIn</h3>
-<h4>Insert and parse another file</h4>
+    <ol>
+        <div class="featureBox"><h3><li>Patching</li></h3>
+<h4>Parse and insert another file</h4>
 <p>
-The maybe most important thing it to split, things up, into manageable parts. There is nothing worse than browsing through a massive amount of code that most of the time repeats itself a lot since well. That's how websites are. One page often contains several instances of the same thing like images, tables or whole pieces of text.
+The maybe most important thing it to split, things up, into manageable parts. There is nothing worse than browsing through a massive amount of code that most of the time repeats itself a lot since well - that's how websites are. One page often contains several instances of the same thing like images, tables or whole pieces of text.
 </p>
-</div>
-<div class="featureBox"><h3>Lists</h3>
+</div><div class="sep"></div>
+<div class="featureBox"><h3><li>Lists</li></h3>
 <h4>Populate and maintain lists</h4>
 <p>
-The maybe most important thing it to split, things up into manageable parts. There is nothing worse than browsing through a massive amount of code that most of the time repeats itself a lot since well. That's how websites are. One page often contains several instances of the same thing like images, tables or whole pieces of text.
+We also need to organize similar content in one place since that is the same thing we do in our mind. We think of  You can populate them manually, search in directories with regular expressions or generate them by applying functions to other lists. Finally you can wrap the content of a list with web code and dump it into the HTML file of your website. Wherever and however you like.
 </p>
-</div>
+</div><div class="sep"></div>
+<div class="featureBox"><h3><li>Trees</li></h3>
+<h4>Create and recursively work with them</h4>
+<p>
+While normally being a concept in math and information technology trees can come in very handy while working with nested structures like nested lists, file hierarchies or the structure of a document. You can generate trees by iterating through directories or by hand. Afterwards you can apply a function to the nodes and in the end just drop everything into your web document.
+</p>
+</div><div class="sep"></div>
 
+    </ol>
 </div>
 
 <div class=footerBox>
-    <p>Sebastian Semper - GitHub - Ruby - W3C</p>
+    <p><a href="http://www.sebastiansemper.de" target="_blank">Sebastian Semper</a> - <a href="https://github.com/SebastianSemper/RubySow" target="_blank">GitHub</a> - <a href="https://www.ruby-lang.org/en/" target="_blank">Ruby</a> - <a href="https://code.google.com/p/hyphenator/" target="_blank">Hyphenator</a> - <a href="http://www.gnu.org/copyleft/gpl.html" target="_blank">GPL</a></p>
+
     <p>2015</p>
 </div>
 </body>

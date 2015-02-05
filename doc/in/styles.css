@@ -31,8 +31,9 @@ a:hover {
 .navBox {
     width:                                100%;
     text-align:                         center;
+    font-size:                          1.1em;
     border-bottom:              1px solid blue;
-    padding:                            5px 10px 8px 10px;
+    padding:                            13px 10px 16px 10px;
     background-color:           rgb(240,240,240);
 }
 
@@ -52,6 +53,22 @@ a:hover {
     margin:                                5px;
     padding:                               5px;
     font-family:                        "Times New Roman",serif;
+    text-align:                             justify;
+}
+
+.inText {
+    float: right;
+    margin: 10px;
+    padding: 5px;
+    border: 1px solid rgb(220,220,220);
+    border-radius: 5px;
+}
+
+.sep {
+    width: 500px;
+    height: 1px;
+    background-color: rgb(200,200,200);
+    margin: 20px auto 20px auto;
 }
 
 .featureBox{

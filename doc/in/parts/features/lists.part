@@ -1,5 +1,5 @@
-<h3>Lists</h3>
+<h3><li>Lists</li></h3>
 <h4>Populate and maintain lists</h4>
 <p>
-The maybe most important thing it to split, things up into manageable parts. There is nothing worse than browsing through a massive amount of code that most of the time repeats itself a lot since well. That's how websites are. One page often contains several instances of the same thing like images, tables or whole pieces of text.
+We also need to organize similar content in one place since that is the same thing we do in our mind. We think of  You can populate them manually, search in directories with regular expressions or generate them by applying functions to other lists. Finally you can wrap the content of a list with web code and dump it into the HTML file of your website. Wherever and however you like.
 </p>

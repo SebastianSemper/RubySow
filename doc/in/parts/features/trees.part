@@ -1,0 +1,5 @@
+<h3><li>Trees</li></h3>
+<h4>Create and recursively work with them</h4>
+<p>
+While normally being a concept in math and information technology trees can come in very handy while working with nested structures like nested lists, file hierarchies or the structure of a document. You can generate trees by iterating through directories or by hand. Afterwards you can apply a function to the nodes and in the end just drop everything into your web document.
+</p>
