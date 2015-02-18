@@ -1,0 +1,3 @@
+<div class="navBox">
+    $dropLists[<a href="%">%</a>,$getList[pagesLinksNews],$getList[pagesTexts]]
+</div>

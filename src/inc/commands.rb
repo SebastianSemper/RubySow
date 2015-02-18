@@ -141,6 +141,7 @@ def readTree(argv)
 end
 
 def sowAll(argv)
+
     inTree = searchFileTree(".rhtml",FileTree)
     Dir.chdir("..")
 
@@ -153,7 +154,7 @@ def sowAll(argv)
     Dir.chdir("..")
 
     applyToTree(method(:sowToFile),[inTree,outTree])
-
+    Dir.chdir(inTree[:node])
     copyInTree = searchFileTree(".(css|jpe?g|png|js)",FileTree)
     Dir.chdir("..")
     copyOutTree = copyInTree.dup
@@ -248,7 +249,10 @@ def fetchJS(argv)
         return(out)
 end
 
-
+def genBlog(argv)
+    generateBlog(argv[0]+argv[1])
+    return ""
+end
 
 CmdNames = [
     'setVariable',
@@ -269,7 +273,8 @@ CmdNames = [
     'dropLists',
     'patchIn',
     'fetchCSS',
-    'fetchJS'
+    'fetchJS',
+    'genBlog'
 ]
 CmdMethods = [
     method(:setVariable),
@@ -290,7 +295,8 @@ CmdMethods = [
     method(:dropLists),
     method(:patchIn),
     method(:fetchCSS),
-    method(:fetchJS)
+    method(:fetchJS),
+    method(:genBlog),
 ]
 CmdArgc = [
     2,
@@ -311,5 +317,6 @@ CmdArgc = [
     -1,
     1,
     -1,
-    -1
+    -1,
+    2
 ]

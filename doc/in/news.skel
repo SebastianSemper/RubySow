@@ -1,0 +1,13 @@
+$patchIn[../parts/header_news.part]
+
+<div class="contentBox">
+   
+    <p>
+        This news section was generated with the blogging feature!
+    </p>
+
+    $insertBlog
+
+</div>
+
+$patchIn[../parts/footer.part]

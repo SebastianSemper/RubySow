@@ -1,0 +1,15 @@
+<div class="newsBox">
+	<h1>
+		$name
+	</h1>
+	<h2>
+		$date
+	</h2>
+
+	$text
+	<div class="tags">
+		Tags: $tags
+	</div>
+</div>
+
+<div class="sep"></div>

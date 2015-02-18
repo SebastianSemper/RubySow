@@ -64,6 +64,12 @@ a:hover {
     border-radius: 5px;
 }
 
+.newsBox {
+    padding: 20px;
+    background-color: rgba(0,0,0,0.1);
+    border-radius:20px;
+}
+
 .sep {
     width: 500px;
     height: 1px;
