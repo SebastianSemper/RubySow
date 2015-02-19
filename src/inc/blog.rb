@@ -1,45 +1,79 @@
-$blogParams = [
-	"page_skel",
-	"post_skel",
-	"post_folder",
-	"extra_page",
-	"posts_per_page"
-]
+Page = Struct.new(
+	#list of posts - sorted
+	:posts,
+	#link to page
+	:link,
+	#previous page - if it exists
+	:pred,
+	#successing page
+	:succ,
+	#final plaintext
+	:final
+	)
 
-$blogValues = [
-]
+Post = Struct.new(
+	#post name
+	:name,
+	#date as string
+	:date,
+	#date for sorting
+	:date_s,
+	#tags of post
+	:tags,
+	#link to page for single post
+	:link,
+	#text only
+	:text,
+	#final output
+	:final
+	)
 
-def parseConfig(config)
-	$blogValues = Array.new($blogParams.size(),nil)
+Blog = Struct.new(
+	:root_p,
+	#path to config file
+	:config_p,
+	#path to page skeleton
+	:pageSkel_p,
+	#path to post skeleton
+	:postSkel_p,
+	#path to the content folder
+	:content_p,
+
+	#page array
+	:pages,
+	#post array 
+	:posts,
+	#page size (posts per page)
+	:pageSize,
+	:extraPage
+	)
+
+def parseConfig(blog,config)
 	fileHandle = File.open(config,'r')
-	lineNum = 1
+	blog[:root_p] = File.dirname(File.absolute_path(config))
+	blog[:config_p] = File.absolute_path(config)
 	fileHandle.each_line{ |line| 
 		#allow comments and empty lines
 		next if line.strip()[0] == "#"
 		next if line == ""
-		part = line.partition("=")
+		part = line.partition(":")
 		
-		if (part.find_index("=")==nil)
-			puts("Syntax error in line #{lineNum}")
-		else
-			index = $blogParams.find_index(part[0])
-			if (index != nil)
-				$blogValues[index] = part[2]
-			end
+		if ( line.partition("$page_skel:")[1] != "")
+			blog[:pageSkel_p] = blog[:root_p] + "/" + line.partition("$page_skel:")[2].strip!
+		elsif ( line.partition("$post_skel:")[1] != "")
+			blog[:postSkel_p] = blog[:root_p] + "/" + line.partition("$post_skel:")[2].strip!
+		elsif ( line.partition("$content_p:")[1] != "")
+			blog[:content_p] = blog[:root_p] + "/" + line.partition("$content_p:")[2].strip!
+		elsif ( line.partition("$posts_per_page:")[1] != "")
+			blog[:pageSize] = line.partition("$posts_per_page:")[2].to_i
+		elsif ( line.partition("$extra_page:")[1] != "")
+			blog[:extraPage] = line.partition("$extra_page:")[2].to_i
 		end
-		lineNum += 1
 	}
-	if $blogValues.find_index(nil) == nil
-		puts("Config file #{config} was sane!")
-		return 1
-	else
-		puts("Config file #{config} was not sane! Values are missing.")
-		return 0
-	end
+	return 1
 end
 
 def checkPageSkel(file)
-	file = file.strip!
 	if (File.exist?(file))
 		fileHandle = File.open(file,'r')
 		lineNum = 1
@@ -59,7 +93,6 @@ def checkPageSkel(file)
 end
 
 def getPosts(p)
-	p = p.strip!
 	if (File.directory?(p))
 		return Dir.entries(p).select{|c| c[/.*\.post/]}
 	else
@@ -68,34 +101,36 @@ def getPosts(p)
 	end
 end
 
-def postToPart(post,skel)
-	name = ""
-	date = ""
-	tags = []
-	text = ""
+def plainToPost(po,skel,blog)
+	post = Post.new()
+	post[:text]  = ""
 	if File.exist?(skel)
-		fileHandle = File.open(post,'r')
+		fileHandle = File.open(po,'r')
 		fileHandle.each_line{ |line|
 			if ( line.partition("$name:")[1] != "")
-				name = line.partition("$name:")[2].strip!
+				post[:name] = line.partition("$name:")[2].strip!
 			elsif ( line.partition("$date:")[1] != "")
-				date = line.partition("$date:")[2].strip!
+				post[:date] = line.partition("$date:")[2].strip!
 			elsif ( line.partition("$tags:")[1] != "")
-				tags = line.partition("$tags:")[2].strip!.split(",")
+				post[:tags] = line.partition("$tags:")[2].strip!.split(",")
 			else
-				text += line
+				post[:text] += line
 			end
 		}
 		fileHandle.close()
-		out = ""
+		post[:link] = "#{processDate(post[:date])}_#{processName(post[:name])}".downcase()[/[0-9\_a-z]*/]
+		post[:final]  = ""
 		fileHandle = File.open(skel,'r')
 		fileHandle.each_line{ |line|
-			out += line.sub("$name",name).sub("$date",date).sub("$text",text).sub("$tags",tags.join(','))
+			if blog[:extraPage]==1
+				line = line.sub("$link",post[:link]+".html")
+			end
+			post[:final] += line.sub("$name",post[:name] ).sub("$date",post[:date]).sub("$text",post[:text] ).sub("$tags",post[:tags].join(','))
 		}
-		return out
+		return post
 	else
 		puts("No skeleton for post found at #{skel}. Doing nothing.")
-		return ""
+		return Post.new()
 	end
 end
 
@@ -113,63 +148,89 @@ def partsToSkel(parts,skel)
 	end
 end
 
+def processDate(d)
+	out = d.split('.').reverse()
+	out[1] = out[1].rjust(2, '0')
+	out[2] = out[2].rjust(2, '0')
+	return out.join("_")
+end
+
+def processName(n)
+	return n.strip.gsub(" ","_")
+end
 
 def generateBlog(config)
 	if (File.exist?(config))
+		blog = Blog.new()
 		puts("Generating blog from #{config}.")
 		#populate blogValues
-		return if parseConfig(config) == 0
-
+		return if parseConfig(blog,config) == 0
+		puts(blog)
 		#check page skeleton for $insertBlog
-		blogLine = checkPageSkel(
-			File.dirname(File.absolute_path(config))+
-			"/"+$blogValues[$blogParams.find_index("page_skel")]
-			) 
-		return if blogLine == 0
+		if  (checkPageSkel(blog[:pageSkel_p])  == 0)
+			return
+		end
 
-		posts = getPosts(
-			File.dirname(File.absolute_path(config))+
-			"/"+$blogValues[$blogParams.find_index("post_folder")]
-			)
-		return if posts == 0
-		if (posts.size() == 0)
+		postsPlain = getPosts(blog[:content_p])
+
+		return if postsPlain == 0
+		if postsPlain.size() == 0
 			puts("No posts in directory. Doing nothing.")
 			return 
 		end
-
-		parts = []
-		skel = File.dirname(File.absolute_path(config))+ "/"+$blogValues[$blogParams.find_index("post_skel")].strip
-		posts.each{|post|
-			path = File.dirname(File.absolute_path(config)) + "/" + $blogValues[$blogParams.find_index("post_folder")].strip + "/" + post
+		puts(blog)
+		
+		blog[:posts] = []
+		k = 1
+		blog[:pages] = [Page.new([],"page#{k}.html",nil,nil,"")]
+		
+		postsPlain.each_with_index{|post,i|
+			path = blog[:content_p] + "/" + post
 			puts("Processing post from #{path}.")
-			parts.insert(-1,postToPart(path,skel))
-		}
-		postsPerPage = $blogValues[$blogParams.find_index("posts_per_page")].to_i
-		pageParts = [""]
-		postCount = 1
-		pageName = File.dirname(File.absolute_path(config))+
-					"/"+$blogValues[$blogParams.find_index("post_folder")].strip + 
-					"/" + "page#{pageParts.size()}.rhtml"
-		pageFile = File.open(pageName,'w')
-		pageSkel = File.dirname(File.absolute_path(config)) +"/" +$blogValues[$blogParams.find_index("page_skel")].strip
-		parts.each{|part|
-			pageParts[-1] += part
-			if  postCount == postsPerPage 
-				pageFile.write(partsToSkel(pageParts[-1],pageSkel))
-				pageFile.close()
-				pageParts.insert(-1,"")
-				pageName = File.dirname(File.absolute_path(config))+
-					"/"+$blogValues[$blogParams.find_index("post_folder")].strip + 
-					"/" + "page#{pageParts.size()}.rhtml"
-				pageFile = File.open(pageName,'w')
-				postCount = 0
+			blog[:posts].insert(-1,plainToPost(path,blog[:postSkel_p],blog))
+			blog[:pages][-1][:posts].insert(-1,blog[:posts][-1])
+			if ((i+1) % blog[:pageSize] == 0)
+				k += 1
+				blog[:pages].insert(-1,Page.new([],"page#{k}.html",nil,nil,""))				
 			end
-			postCount += 1
+			if blog[:extraPage]==1
+				outFile = File.open("#{blog[:content_p]}/#{blog[:posts][-1][:link]}.rhtml",'w')
+				inFile = File.open(blog[:pageSkel_p],'r')
+				inFile.each_line{|line|
+					outFile.write(line.sub("$insertBlog",blog[:posts][-1][:final]))
+				}
+				outFile.close()
+				inFile.close()
+			end	
 		}
-		puts($blogValues)
-		puts(pageFile)
-		pageFile.write(partsToSkel(pageParts[-1],pageSkel))
-		pageFile.close()
+
+		blog[:pages].each_with_index{|page,i|
+			outFile = File.open("#{blog[:content_p]}/page#{i+1}.rhtml",'w')
+			inFile = File.open(blog[:pageSkel_p],'r')
+			if i > 0
+				page[:pred] = blog[:pages][i-1]
+			end
+			if i < (blog[:pages].size()-1)
+				page[:succ] = blog[:pages][i+1]
+			end
+			text = ""
+			page[:posts].each{|post|
+				text += post[:final]
+			}
+			inFile.each_line{|line|
+				toWrite = line.sub("$insertBlog",text)
+				if i > 0
+					toWrite = toWrite.sub("$predLink",page[:pred][:link])
+				end
+				if i < (blog[:pages].size()-1)
+					toWrite = toWrite.sub("$succLink",page[:succ][:link])
+				end
+				page[:final] += toWrite
+			}
+			outFile.write(page[:final])
+			outFile.close()
+			inFile.close()
+		}
 	else
 		puts("Config file #{config} not found! Doing nothing.")
 		return
