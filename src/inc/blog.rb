@@ -1,3 +1,17 @@
+#Copyright (C) 2015  Sebastian Semper
+
+#This program is free software: you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, either version 3 of the License, or (at your option) any later
+#version.
+
+#This program is distributed in the hope that it will be useful, but WITHOUT ANY
+#WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+#PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License along with
+#this program.  If not, see <http://www.gnu.org/licenses/>
+
 Page = Struct.new(
 	#list of posts - sorted
 	:posts,
@@ -45,6 +59,7 @@ Blog = Struct.new(
 	:posts,
 	#page size (posts per page)
 	:pageSize,
+	#should posts get an own page
 	:extraPage
 	)
 
@@ -56,7 +71,6 @@ def parseConfig(blog,config)
 		#allow comments and empty lines
 		next if line.strip()[0] == "#"
 		next if line == ""
-		part = line.partition(":")
 		
 		if ( line.partition("$page_skel:")[1] != "")
 			blog[:pageSkel_p] = blog[:root_p] + "/" + line.partition("$page_skel:")[2].strip!
@@ -101,7 +115,7 @@ def getPosts(p)
 	end
 end
 
-def plainToPost(po,skel,blog)
+def plainToPost(po,skel,blog,k)
 	post = Post.new()
 	post[:text]  = ""
 	if File.exist?(skel)
@@ -187,7 +201,7 @@ def generateBlog(config)
 		postsPlain.each_with_index{|post,i|
 			path = blog[:content_p] + "/" + post
 			puts("Processing post from #{path}.")
-			blog[:posts].insert(-1,plainToPost(path,blog[:postSkel_p],blog))
+			blog[:posts].insert(-1,plainToPost(path,blog[:postSkel_p],blog,k))
 			blog[:pages][-1][:posts].insert(-1,blog[:posts][-1])
 			if ((i+1) % blog[:pageSize] == 0)
 				k += 1
@@ -221,9 +235,13 @@ def generateBlog(config)
 				toWrite = line.sub("$insertBlog",text)
 				if i > 0
 					toWrite = toWrite.sub("$predLink",page[:pred][:link])
+				else
+					toWrite = toWrite.sub("$predLink"," ")	
 				end
 				if i < (blog[:pages].size()-1)
 					toWrite = toWrite.sub("$succLink",page[:succ][:link])
+				else
+					toWrite = toWrite.sub("$succLink"," ")
 				end
 				page[:final] += toWrite
 			}
