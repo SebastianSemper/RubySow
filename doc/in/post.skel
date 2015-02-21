@@ -1,6 +1,8 @@
 <div class="newsBox">
 	<h1>
-		$name
+		<a href="$link">
+			$name
+		</a>
 	</h1>
 	<h2>
 		$date

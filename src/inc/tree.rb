@@ -18,10 +18,10 @@ def genFileTree(path,pattern,subTree)
     Dir.foreach("."){|x|
         next if x == "." || x == ".."
         if (File.directory?(x))
-            subTree[:childs].insert(-1, genFileTree(x,pattern,Tree.new(x,[])))
+            subTree[:children].insert(-1, genFileTree(x,pattern,Tree.new(x,[])))
             Dir.chdir("..")
         else
-            subTree[:childs].insert(-1,x)
+            subTree[:children].insert(-1,x)
         end
     }
     return subTree
@@ -29,13 +29,13 @@ end
 
 def searchFileTree(pattern,subTree)
     out = Tree.new(subTree[:node],[])
-    subTree[:childs].each{|c|
+    subTree[:children].each{|c|
         if (c.is_a?(String))
             if (c = c[/.*#{pattern}/])
-                out[:childs].insert(-1,c)
+                out[:children].insert(-1,c)
             end
         elsif (c.is_a?(Tree))
-            out[:childs].insert(-1,searchFileTree(pattern,c))
+            out[:children].insert(-1,searchFileTree(pattern,c))
         end
     }
     return out
@@ -43,13 +43,13 @@ end
 
 def renameFileTree(pre,post,subTree)
     out = Tree.new(subTree[:node],[])
-    subTree[:childs].each{|c|
+    subTree[:children].each{|c|
         if (c.is_a?(String))
             if (c = c[/.*#{pre}/])
-                out[:childs].insert(-1,c.gsub(pre,post))
+                out[:children].insert(-1,c.gsub(pre,post))
             end
         elsif (c.is_a?(Tree))
-            out[:childs].insert(-1,renameFileTree(pre,post,c))
+            out[:children].insert(-1,renameFileTree(pre,post,c))
         end
     }
     return out
@@ -62,11 +62,11 @@ def absoluteFileTree(subTree)
         Dir.mkdir(subTree[:node])
     end
     Dir.chdir(subTree[:node])
-    subTree[:childs].each{|c|
+    subTree[:children].each{|c|
         if (c.is_a?(String))
-            out[:childs].insert(-1,Dir.getwd().to_s + "/" + c)
+            out[:children].insert(-1,Dir.getwd().to_s + "/" + c)
         elsif (c.is_a?(Tree))
-            out[:childs].insert(-1,absoluteFileTree(c))
+            out[:children].insert(-1,absoluteFileTree(c))
             Dir.chdir("..")
         end
     }
@@ -75,14 +75,14 @@ end
 
 def applyToTree(fun,trees)
     treeCount = trees.size()-1
-    childCount = trees[0][:childs].size()-1
+    childCount = trees[0][:children].size()-1
     childArray = []
     for i in 0..childCount
         childArray.clear()
         for j in 0..treeCount
-            childArray.insert(-1,trees[j][:childs][i])
+            childArray.insert(-1,trees[j][:children][i])
         end
-        if (trees[0][:childs][i].is_a?(Tree))
+        if (trees[0][:children][i].is_a?(Tree))
             applyToTree(fun,childArray)
         else
             fun.call(childArray)
@@ -90,5 +90,5 @@ def applyToTree(fun,trees)
     end
 end
 
-Tree = Struct.new(:node,:childs)
+Tree = Struct.new(:node,:children)
 FileTree = Tree.new("",[])

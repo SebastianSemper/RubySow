@@ -39,7 +39,8 @@ Post = Struct.new(
 	#text only
 	:text,
 	#final output
-	:final
+	:final,
+	:page
 	)
 
 Blog = Struct.new(
@@ -60,7 +61,17 @@ Blog = Struct.new(
 	#page size (posts per page)
 	:pageSize,
 	#should posts get an own page
-	:extraPage
+	:extraPage,
+	:archive,
+
+	#store the dates in a tree - posts are leaves
+	:dateTree,
+	:tagTree,
+
+	#links to drop below posts
+	:backLink,
+	:pastLink,
+	:nextLink
 	)
 
 def parseConfig(blog,config)
@@ -78,10 +89,18 @@ def parseConfig(blog,config)
 			blog[:postSkel_p] = blog[:root_p] + "/" + line.partition("$post_skel:")[2].strip!
 		elsif ( line.partition("$content_p:")[1] != "")
 			blog[:content_p] = blog[:root_p] + "/" + line.partition("$content_p:")[2].strip!
+		elsif ( line.partition("$nextLink:")[1] != "")
+			blog[:nextLink] = line.partition("$nextLink:")[2].strip!
+		elsif ( line.partition("$backLink:")[1] != "")
+			blog[:backLink] = line.partition("$backLink:")[2].strip!
+		elsif ( line.partition("$pastLink:")[1] != "")
+			blog[:pastLink] = line.partition("$pastLink:")[2].strip!
 		elsif ( line.partition("$posts_per_page:")[1] != "")
 			blog[:pageSize] = line.partition("$posts_per_page:")[2].to_i
 		elsif ( line.partition("$extra_page:")[1] != "")
 			blog[:extraPage] = line.partition("$extra_page:")[2].to_i
+		elsif ( line.partition("$archive:")[1] != "")
+			blog[:archive] = line.partition("$archive:")[2].to_i
 		end
 	}
 	return 1
@@ -132,8 +151,15 @@ def plainToPost(po,skel,blog,k)
 			end
 		}
 		fileHandle.close()
-		post[:link] = "#{processDate(post[:date])}_#{processName(post[:name])}".downcase()[/[0-9\_a-z]*/]
+		post[:link] = "#{processDate(post[:date]).join("_")}_#{processName(post[:name])}".downcase()[/[0-9\_a-z]*/]
 		post[:final]  = ""
+		post[:date_s] = processDate(post[:date])
+		
+		dateInTree(post[:date_s],blog[:dateTree],post)
+		post[:tags].each{|t|
+			tagInTree(t,blog[:tagTree],post)
+		}
+		
 		fileHandle = File.open(skel,'r')
 		fileHandle.each_line{ |line|
 			if blog[:extraPage]==1
@@ -166,11 +192,39 @@ def processDate(d)
 	out = d.split('.').reverse()
 	out[1] = out[1].rjust(2, '0')
 	out[2] = out[2].rjust(2, '0')
-	return out.join("_")
+	return out
 end
 
 def processName(n)
 	return n.strip.gsub(" ","_")
+end
+
+def dateInTree(d,t,p)
+	t[:children].each{|y|
+		if d[0] == y[:node]
+			y[:children].each{|m|
+				if d[1] == m[:node]
+
+					m[:children].insert(-1,p)
+					return
+				end
+			}
+			y[:children].insert(-1,Tree.new(d[1],[p]))
+			return
+		end
+	}
+	t[:children].insert(-1,Tree.new(d[0],[Tree.new(d[1],[p])]))
+	return
+end
+
+def tagInTree(tag,tree,p)
+	tree[:children].each{|c|
+		if tag == c[:node]
+			c[:children].insert(-1,p)
+			return
+		end
+	}
+	tree[:children].insert(-1,Tree.new(tag.strip,[p]))
 end
 
 def generateBlog(config)
@@ -197,27 +251,35 @@ def generateBlog(config)
 		blog[:posts] = []
 		k = 1
 		blog[:pages] = [Page.new([],"page#{k}.html",nil,nil,"")]
-		
+		blog[:dateTree] = Tree.new("dateTree",[])
+		blog[:tagTree] = Tree.new("tagTree",[])
+
 		postsPlain.each_with_index{|post,i|
 			path = blog[:content_p] + "/" + post
 			puts("Processing post from #{path}.")
 			blog[:posts].insert(-1,plainToPost(path,blog[:postSkel_p],blog,k))
 			blog[:pages][-1][:posts].insert(-1,blog[:posts][-1])
-			if ((i+1) % blog[:pageSize] == 0)
-				k += 1
-				blog[:pages].insert(-1,Page.new([],"page#{k}.html",nil,nil,""))				
+			blog[:posts][-1][:page] = blog[:pages][-1]
+			if blog[:pageSize] > 0
+				if ((i+1) % blog[:pageSize] == 0)
+					k += 1
+					blog[:pages].insert(-1,Page.new([],"page#{k}.html",nil,nil,""))				
+				end
 			end
 			if blog[:extraPage]==1
 				outFile = File.open("#{blog[:content_p]}/#{blog[:posts][-1][:link]}.rhtml",'w')
 				inFile = File.open(blog[:pageSkel_p],'r')
 				inFile.each_line{|line|
-					outFile.write(line.sub("$insertBlog",blog[:posts][-1][:final]))
+					line = line.sub("$pastLink"," ").sub("$nextLink"," ")
+					outFile.write(line.sub("$insertBlog",blog[:posts][-1][:final].sub("$link"," ").sub("$backLink",blog[:backLink].sub("%",blog[:posts][-1][:page][:link]))))
 				}
 				outFile.close()
 				inFile.close()
+				blog[:posts][-1][:final] = blog[:posts][-1][:final].sub("$link","#{blog[:posts][-1][:link]}.html").sub("$backLink"," ")
 			end	
 		}
 
+		
 		blog[:pages].each_with_index{|page,i|
 			outFile = File.open("#{blog[:content_p]}/page#{i+1}.rhtml",'w')
 			inFile = File.open(blog[:pageSkel_p],'r')
@@ -233,15 +295,19 @@ def generateBlog(config)
 			}
 			inFile.each_line{|line|
 				toWrite = line.sub("$insertBlog",text)
-				if i > 0
-					toWrite = toWrite.sub("$predLink",page[:pred][:link])
+				if blog[:pageSize] > 0
+					if i > 0
+						toWrite = toWrite.sub("$pastLink",blog[:pastLink].sub("%",page[:pred][:link]))
+					else
+						toWrite = toWrite.sub("$pastLink"," ")	
+					end
+					if i < (blog[:pages].size()-1)
+						toWrite = toWrite.sub("$nextLink",blog[:nextLink].sub("%",page[:succ][:link]))
+					else
+						toWrite = toWrite.sub("$nextLink"," ")
+					end
 				else
-					toWrite = toWrite.sub("$predLink"," ")	
-				end
-				if i < (blog[:pages].size()-1)
-					toWrite = toWrite.sub("$succLink",page[:succ][:link])
-				else
-					toWrite = toWrite.sub("$succLink"," ")
+					toWrite = toWrite.sub("$nextLink"," ").sub("$pastLink"," ")
 				end
 				page[:final] += toWrite
 			}
@@ -249,6 +315,42 @@ def generateBlog(config)
 			outFile.close()
 			inFile.close()
 		}
+
+		if blog[:archive] == 1
+			outFile = File.open("#{blog[:content_p]}/archive.rhtml",'w')
+			inFile = File.open(blog[:pageSkel_p].sub(".","_archive."),'r')
+			tags = "<ul>"
+			blog[:tagTree][:children].each{|t|
+				tags += "<li>#{t[:node]}</li><ul>"
+				t[:children].each{|c|
+					tags += "<li><a href=\"#{c[:link]}.html\">#{c[:name]} - #{c[:date]}</a></li>"
+				}
+				tags += "</ul>"
+
+			}
+			tags += "</ul>"
+
+			dates = "<ul>"
+			blog[:dateTree][:children].each{|y|
+				dates += "<li>#{y[:node]}</li><ul>"
+				y[:children].each{|m|
+					dates += "<li>#{m[:node]}</li><ul>"
+					m[:children].each{|p|
+						puts(p)
+						dates += "<li><a href=\"#{p[:link]}.html\">#{p[:name]}</a></li>"
+					}
+					dates += "</ul>"
+				}
+				dates += "</ul>"
+			}
+			dates += "</ul>"
+			inFile.each_line{|line|
+				outFile.write(line.sub("$insertTags",tags).sub("$insertDates",dates))
+			}
+			outFile.close()
+			inFile.close()
+		end
+		
 	else
 		puts("Config file #{config} not found! Doing nothing.")
 		return

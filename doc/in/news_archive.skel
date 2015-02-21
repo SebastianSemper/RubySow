@@ -6,13 +6,11 @@ $patchIn[../parts/header_news.part]
         This news section was generated with the blogging feature!
     </p>
 
-    <p>
-    	The link to the archive of all news can be found <a href="archive.html">here</a>.
-    </p>
+    <h1>Tags</h1>
+    $insertTags
 
-    $insertBlog
-
-    $pastLink $nextLink
+    <h1>Dates</h1>
+    $insertDates
 
 </div>
 
