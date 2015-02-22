@@ -45,8 +45,8 @@ a:hover {
     width:                                  700px;
     margin:                                0px auto 0px auto;
     padding:                             20px 40px 20px 40px;
-    border-left:                        1px solid grey;
-    border-right:                        1px solid grey;
+    border-left:                        1px solid gray;
+    border-right:                        1px solid gray;
 }
 
 .contentBox p{
@@ -68,6 +68,28 @@ a:hover {
     padding: 20px;
     background-color: rgba(0,0,0,0.1);
     border-radius:20px;
+}
+
+.newsBox a{
+    text-decoration: none;
+}
+
+.newsBox h1{
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+}
+
+.newsBox h2{
+    padding: 10px;
+    margin: 0px;
+    color: rgb(80,80,80);
+    text-align: center;
+}
+
+.newsBox .tags {
+    text-align: center;
+    color: rgb(40,40,150);
 }
 
 .sep {

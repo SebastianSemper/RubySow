@@ -3,14 +3,15 @@ $patchIn[../parts/header_news.part]
 <div class="contentBox">
    
     <p>
-        This news section was generated with the blogging feature!
+        The whole archive is generated automatically from the metadata of the posts and can be configured to show only dates or tags or both. Styling of the lists can be achieved by the style sheet.
     </p>
-
-    <h1>Tags</h1>
-    $insertTags
-
-    <h1>Dates</h1>
-    $insertDates
+ 	<div class="newsBox">
+	    <h1>Tags</h1>
+		$insertTags
+		<div class="sep"></div>
+	    <h1>Dates</h1>
+		$insertDates
+    </div>
 
 </div>
 

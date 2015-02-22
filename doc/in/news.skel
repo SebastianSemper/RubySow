@@ -12,7 +12,8 @@ $patchIn[../parts/header_news.part]
 
     $insertBlog
 
-    $pastLink $nextLink
+    <p style="text-align: left">$pastLink</p> 
+    <p style="text-align: right">$nextLink</p>
 
 </div>
 
