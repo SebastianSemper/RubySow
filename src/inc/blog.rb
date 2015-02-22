@@ -12,9 +12,8 @@
 #You should have received a copy of the GNU General Public License along with
 #this program.  If not, see <http://www.gnu.org/licenses/>
 
-#TODO: *check metadata of posts;*sort posts by date;
+#TODO: *check metadata of posts;
 # => *make archive modular;
-# => *delete any *.rhtml files in postfolder
 
 Page = Struct.new(
 	#list of posts - sorted
@@ -177,9 +176,6 @@ def plainToPost(po,blog,k)
 
 		#reorder and fill up date with zeros
 		post[:date_s] = processDate(post[:date])
-		
-		#sort the post into the dateTree
-		dateInTree(post[:date_s],blog[:dateTree],post)
 
 		#sort post into tagTree
 		post[:tags].each{|t|
@@ -270,7 +266,12 @@ def generateBlog(config)
 			return
 		end
 
-		#import blog posts from the folde
+		#delete old *.rhtml
+		Dir.entries(blog[:content_p]).select{|c| c[/.*\.rhtml/]}.each{|r|
+			File.delete("#{blog[:content_p]}/#{r}")
+		}
+
+		#import blog posts from the folder
 		postsPlain = getPosts(blog[:content_p])
 
 		#check for errors
@@ -302,17 +303,28 @@ def generateBlog(config)
 
 			#generate a new post struct
 			blog[:posts].insert(-1,plainToPost(path,blog,pgCnt))
+		}
+		
+		#sort the posts by date
+		blog[:posts].sort_by!{|p|
+			-p[:date_s].join("").to_i
+		}
+		
+
+		blog[:posts].each_with_index{|post,i|
+			#sort the post into the dateTree
+			dateInTree(post[:date_s],blog[:dateTree],post)
 
 			#insert post into trailing page
-			blog[:pages][-1][:posts].insert(-1,blog[:posts][-1])
+			blog[:pages][-1][:posts].insert(-1,post)
 
 			#store in post on which page it is
-			blog[:posts][-1][:page] = blog[:pages][-1]
+			post[:page] = blog[:pages][-1]
 
 			#check if we want to split blog into pages
 			if blog[:pageSize] > 0
 				#generate new page if one is needed make sur eno empty page is generated
-				if ((i+1) % blog[:pageSize] == 0)&&(i+1 < postsPlain.size())
+				if ((i+1) % blog[:pageSize] == 0)&&(i+1 < blog[:posts].size())
 					pgCnt += 1
 					blog[:pages].insert(-1,Page.new([],"page#{pgCnt}.html",nil,nil,""))				
 				end
@@ -322,7 +334,7 @@ def generateBlog(config)
 			if blog[:extraPage]==1
 
 				#generate a *.rhtml which will be found later by the fileTree and will get sowed together with the rest of the files
-				outFile = File.open("#{blog[:content_p]}/#{blog[:posts][-1][:link]}.rhtml",'w')
+				outFile = File.open("#{blog[:content_p]}/#{post[:link]}.rhtml",'w')
 
 				#use regular page skeleton
 				inFile = File.open(blog[:pageSkel_p],'r')
@@ -332,13 +344,13 @@ def generateBlog(config)
 					#just delete the links inbetween pages
 					line = line.sub("$pastLink"," ").sub("$nextLink"," ")
 					#insert post where normally the blog is and insert the backLink to its own page
-					outFile.write(line.sub("$insertBlog",blog[:posts][-1][:final].sub("$link"," ").sub("$backLink",blog[:backLink].sub("%",blog[:posts][-1][:page][:link]))))
+					outFile.write(line.sub("$insertBlog",post[:final].sub("$link"," ").sub("$backLink",blog[:backLink].sub("%",post[:page][:link]))))
 				}
 				outFile.close()
 				inFile.close()
 
 				#insert the correct link and delte the backlink, because now the post will be put into the blog page
-				blog[:posts][-1][:final] = blog[:posts][-1][:final].sub("$link","#{blog[:posts][-1][:link]}.html").sub("$backLink"," ")
+				post[:final] = post[:final].sub("$link","#{post[:link]}.html").sub("$backLink"," ")
 			end	
 		}
 
@@ -423,7 +435,6 @@ def generateBlog(config)
 				y[:children].each{|m|
 					dates += "<li>#{m[:node]}</li><ul>"
 					m[:children].each{|p|
-						puts(p)
 						dates += "<li><a href=\"#{p[:link]}.html\">#{p[:name]}</a></li>"
 					}
 					dates += "</ul>"

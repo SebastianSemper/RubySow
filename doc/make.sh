@@ -1,2 +1,2 @@
 #/bin/bash
-ruby ../src/RubySow.rb
+./../src/RubySow.rb --config docu.config

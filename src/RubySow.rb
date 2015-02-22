@@ -1,3 +1,4 @@
+#!/bin/ruby
 #Copyright (C) 2015  Sebastian Semper
 
 #This program is free software: you can redistribute it and/or modify it under
@@ -13,10 +14,38 @@
 #this program.  If not, see <http://www.gnu.org/licenses/>
 
 require 'fileutils'
+require 'optparse'
 require "#{File.dirname(__FILE__)}/inc/parser"
 require "#{File.dirname(__FILE__)}/inc/tree"
 require "#{File.dirname(__FILE__)}/inc/variables"
 require "#{File.dirname(__FILE__)}/inc/lists"
 require "#{File.dirname(__FILE__)}/inc/blog"
 require "#{File.dirname(__FILE__)}/inc/commands"
-parseFile("sowtohtml.config")
+
+Options = Struct.new(:config)
+
+class Parser
+  def self.parse(options)
+	args = Options.new("")
+
+    opt_parser = OptionParser.new do |opts|
+      opts.banner = "Usage: ./RubySow.rb [options]"
+
+      opts.on("-c ", "--config CONFIG", "Configuration file to use") do |c|
+        args[:config] << c
+      end
+
+      opts.on("-h", "--help", "Prints this help") do
+        puts opts
+        exit
+      end
+    end
+
+    opt_parser.parse!(options)
+    return args
+  end
+end
+
+options = Parser.parse(ARGV)
+#puts(options)
+parseFile(options[:config])
