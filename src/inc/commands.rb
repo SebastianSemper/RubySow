@@ -155,7 +155,7 @@ def sowAll(argv)
 
     applyToTree(method(:sowToFile),[inTree,outTree])
     Dir.chdir(inTree[:node])
-    copyInTree = searchFileTree(".(css|jpe?g|png|js)",FileTree)
+    copyInTree = searchFileTree(".(css|jpe?g|JPE?G|png|js)",FileTree)
     Dir.chdir("..")
     copyOutTree = copyInTree.dup
     copyOutTree[:node] = argv[0]

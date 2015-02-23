@@ -14,6 +14,8 @@
 
 #TODO: *check metadata of posts;
 # => *make archive modular;
+# => *tags are clickable;
+# => *generate an rss-feed;
 
 Page = Struct.new(
 	#list of posts - sorted
@@ -392,6 +394,7 @@ def generateBlog(config)
 					end
 					#last page has no successor
 					if i < (blog[:pages].size()-1)
+						puts(blog[:nextLink])
 						toWrite = toWrite.sub("$nextLink",blog[:nextLink].sub("%",page[:succ][:link]))
 					else
 						toWrite = toWrite.sub("$nextLink"," ")
