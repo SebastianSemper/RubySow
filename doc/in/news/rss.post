@@ -1,0 +1,5 @@
+$name: RSS feature added
+$date: 25.2.2015
+$tags:news,feature
+
+RubySow got another new feature. Blogs are now processed into a RSS file that can be read from any client that supports the standard.

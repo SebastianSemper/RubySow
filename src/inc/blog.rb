@@ -17,6 +17,8 @@
 # => *tags are clickable;
 # => *generate an rss-feed;
 
+require "rss"
+
 Page = Struct.new(
 	#list of posts - sorted
 	:posts,
@@ -49,6 +51,7 @@ Post = Struct.new(
 	)
 
 Blog = Struct.new(
+	:url,
 	:root_p,
 	#path to config file
 	:config_p,
@@ -69,6 +72,11 @@ Blog = Struct.new(
 	:extraPage,
 	#should an archive be created
 	:archive,
+	#should an rss-file be created
+	:rss,
+	:rss_author,
+	:rss_title,
+	:rss_desc,
 
 	#store the dates in a tree - posts are leaves
 	:dateTree,
@@ -96,14 +104,15 @@ def parseConfig(blog,config)
 		#allow comments and empty lines
 		next if line.strip()[0] == "#"
 		next if line == ""
-		
 		#make some paths absolute with the root directory
 		if ( line.partition("$page_skel:")[1] != "")
-			blog[:pageSkel_p] = blog[:root_p] + "/" + line.partition("$page_skel:")[2].strip!
+			blog[:pageSkel_p] =line.partition("$page_skel:")[2].strip!
 		elsif ( line.partition("$post_skel:")[1] != "")
-			blog[:postSkel_p] = blog[:root_p] + "/" + line.partition("$post_skel:")[2].strip!
+			blog[:postSkel_p] =line.partition("$post_skel:")[2].strip!
+		elsif ( line.partition("$url:")[1] != "")
+			blog[:url] = line.partition("$url:")[2].strip!
 		elsif ( line.partition("$content_p:")[1] != "")
-			blog[:content_p] = blog[:root_p] + "/" + line.partition("$content_p:")[2].strip!
+			blog[:content_p] = line.partition("$content_p:")[2].strip!
 		elsif ( line.partition("$nextLink:")[1] != "")
 			blog[:nextLink] = line.partition("$nextLink:")[2].strip!
 		elsif ( line.partition("$backLink:")[1] != "")
@@ -116,8 +125,21 @@ def parseConfig(blog,config)
 			blog[:extraPage] = line.partition("$extra_page:")[2].to_i
 		elsif ( line.partition("$archive:")[1] != "")
 			blog[:archive] = line.partition("$archive:")[2].to_i
+		elsif ( line.partition("$rss:")[1] != "")
+			blog[:rss] = line.partition("$rss:")[2].to_i
+		elsif ( line.partition("$rss_author:")[1] != "")
+			blog[:rss_author] = line.partition("$rss_author:")[2].strip!
+		elsif ( line.partition("$rss_title:")[1] != "")
+			blog[:rss_title] = line.partition("$rss_title:")[2].strip!
+		elsif ( line.partition("$rss_desc:")[1] != "")
+			blog[:rss_desc] = line.partition("$rss_desc:")[2].strip!
 		end
+		
 	}
+	blog[:url] = blog[:url] + "/" + blog[:content_p]
+	blog[:content_p] = blog[:root_p] + "/" + blog[:content_p]
+	blog[:postSkel_p] = blog[:root_p] + "/" + blog[:postSkel_p]
+	blog[:pageSkel_p] = blog[:root_p] + "/" + blog[:pageSkel_p]
 	return 1
 end
 
@@ -394,7 +416,6 @@ def generateBlog(config)
 					end
 					#last page has no successor
 					if i < (blog[:pages].size()-1)
-						puts(blog[:nextLink])
 						toWrite = toWrite.sub("$nextLink",blog[:nextLink].sub("%",page[:succ][:link]))
 					else
 						toWrite = toWrite.sub("$nextLink"," ")
@@ -452,6 +473,58 @@ def generateBlog(config)
 			}
 			outFile.close()
 			inFile.close()
+		end
+
+		if blog[:rss] == 1
+			#if 0 > 1
+			posts_old = []
+
+			#make new rss feed
+			rss_new = RSS::Maker::RSS20.make("rss") do |maker|
+				maker.channel.author = blog[:rss_author]
+				maker.channel.title = blog[:rss_title]
+				maker.channel.link = blog[:url]
+				maker.channel.description = blog[:rss_desc]
+
+				#check if there already is a feed
+				if (File.exists?(blog[:content_p]+"/"+"rss.xml"))
+
+					#parse the old rss file
+					rss_old = open(blog[:content_p]+"/"+"rss.xml") do |rss|
+			  			feed = RSS::Parser.parse(rss)
+			  			puts(feed)
+			  			#just copy each item that already exists
+			  			feed.items.each do |item|
+			  				#store the title for easy comparison
+			    			posts_old.insert(-1,item.title)
+
+			    			#make the old item to  new one
+			    			maker.items.new_item do |new_item|
+								new_item.title = item.title
+								new_item.link = item.link
+								new_item.description = item.description
+								puts(item.date)
+								new_item.updated = item.date.to_s
+							end
+			  			end
+			  		end
+		  		end
+			
+				blog[:posts].each{|p|
+					if (posts_old.find_index(p[:name]) == nil)
+						maker.items.new_item do |item|
+							item.title = p[:name]
+							item.link = "#{blog[:url]}/" + p[:link]+".html"
+							item.updated = Date.parse(p[:date_s].join("-")).to_s
+							item.description = p[:text]
+						end
+					end
+				}
+			end
+			rss_file = File.open(blog[:content_p]+"/"+"rss.xml","w")
+			rss_file.write(rss_new)
+			rss_file.close()
+
 		end
 		
 	else

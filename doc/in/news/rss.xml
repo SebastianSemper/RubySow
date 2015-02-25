@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="rss"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+  xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
+  <channel>
+    <title>RubySow</title>
+    <link>http://rubysow.sourceforge.net/news</link>
+    <description>News from RubySow</description>
+    <item>
+      <title>Random stuff</title>
+      <link>http://rubysow.sourceforge.net/news/2015_02_17_random_stuff.html</link>
+      <description>
+We implemented the random feature. A feature that includes random functionality on all levels! Please beware of malfunction!</description>
+      <pubDate>Tue, 17 Feb 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-02-17T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>Nice news!</title>
+      <link>http://rubysow.sourceforge.net/news/2015_02_17_nice_news.html</link>
+      <description>
+Here are some nice news, that should really be worth cheering! News are news!</description>
+      <pubDate>Tue, 17 Feb 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-02-17T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>New feature!</title>
+      <link>http://rubysow.sourceforge.net/news/2015_02_15_new_feature.html</link>
+      <description>
+We are happy to announce the feature foo that makes the process of bar very easy! This is very cool!</description>
+      <pubDate>Sun, 15 Feb 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-02-15T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>No news are also news</title>
+      <link>http://rubysow.sourceforge.net/news/2015_01_11_no_news_are_also_news.html</link>
+      <description>
+No news are also news.</description>
+      <pubDate>Sun, 11 Jan 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-01-11T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>Nice news!</title>
+      <link>http://rubysow.sourceforge.net/news/2013_02_17_nice_news.html</link>
+      <description>
+Here are some nice news, that should really be worth cheering! News are news!</description>
+      <pubDate>Sun, 17 Feb 2013 00:00:00 +0100</pubDate>
+      <dc:date>2013-02-17T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>RSS feature added</title>
+      <link>http://rubysow.sourceforge.net/news/2015_02_25_rss_feature_added.html</link>
+      <description>
+RubySow got another new feature. Blogs are now processed into a RSS file that can be read from any client that supports the standard.</description>
+      <pubDate>Wed, 25 Feb 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-02-25T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>Blogging feature added</title>
+      <link>http://rubysow.sourceforge.net/news/2015_02_18_blogging_feature_added.html</link>
+      <description>
+RubySow got a new feature. One can now generate a blog from flat and simple files.</description>
+      <pubDate>Wed, 18 Feb 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-02-18T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>v1.0alpha</title>
+      <link>http://rubysow.sourceforge.net/news/2015_02_04_v1.html</link>
+      <description>
+Most of the functionality is already here and basic websites are working. There are still several bugs to iron out.</description>
+      <pubDate>Wed, 04 Feb 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-02-04T00:00:00+01:00</dc:date>
+    </item>
+    <item>
+      <title>First version</title>
+      <link>http://rubysow.sourceforge.net/news/2015_01_31_first_version.html</link>
+      <description>
+The first commit was made to GitHub. Nothing is really working but it's something!</description>
+      <pubDate>Sat, 31 Jan 2015 00:00:00 +0100</pubDate>
+      <dc:date>2015-01-31T00:00:00+01:00</dc:date>
+    </item>
+  </channel>
+</rss>
