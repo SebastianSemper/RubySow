@@ -61,7 +61,7 @@ end
 def genList(argv)
     listName = argv[0]
     #open dir, pull out rexeg matches, join them
-    listContent_ = Dir.entries(argv[1]).select{|c| c[/#{argv[2]}/]}
+    listContent_ = Dir.entries(argv[1]).select{|c| c[/#{argv[2]}/]}.sort()
     listContent = []
     listContent_.each{|c|
         listContent.insert(-1,argv[1] + "/" + c)
